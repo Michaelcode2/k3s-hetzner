@@ -1,0 +1,33 @@
+name: Provision K3s Cluster
+
+on:
+  workflow_dispatch:
+    inputs:
+      cluster_name:
+        description: 'Name of the cluster'
+        required: true
+        default: 'k3s-cluster'
+
+jobs:
+  provision:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y gettext-base
+
+      - name: Deploy K3s
+        env:
+          HETZNER_TOKEN: ${{ secrets.HETZNER_TOKEN }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_PUBLIC_KEY: ${{ secrets.SSH_PUBLIC_KEY }}
+          CLUSTER_NAME: ${{ github.event.inputs.cluster_name }}
+        run: ./scripts/deploy-k3s.sh
+
+      - name: Upload Kubeconfig
+        uses: actions/upload-artifact@v4
+        with:
+          name: kubeconfig
+          path: kubeconfig

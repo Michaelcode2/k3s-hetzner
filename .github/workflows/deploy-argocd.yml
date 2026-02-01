@@ -1,0 +1,44 @@
+name: Deploy ArgoCD
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy-argocd:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set Kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
+          chmod 600 ~/.kube/config
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Create ArgoCD Namespace
+        run: kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Install ArgoCD
+        run: |
+          kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+      - name: Wait for ArgoCD Server
+        run: |
+          kubectl wait --for=condition=available --timeout=300s deployment/argocd-server -n argocd
+
+      - name: Configure Ingress
+        run: kubectl apply -f config/argocd-ingress.yaml
+
+      - name: Post-Install Instructions
+        run: |
+          echo "ArgoCD installed successfully."
+          echo "To retrieve the initial admin password, run locally (ensure you have the kubeconfig):"
+          echo "kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d"
+          echo ""
+          echo "To access the UI, you can use the Ingress (via Traefik) at the cluster's public IP:"
+          echo "https://<CLUSTER_IP>/"
+          echo "Note: You may see a certificate warning as it uses the default Traefik cert or ArgoCD cert."
