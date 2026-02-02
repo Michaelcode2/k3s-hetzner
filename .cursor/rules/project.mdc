@@ -84,6 +84,12 @@ Required GitHub Secrets:
 ### ArgoCD Patterns
 
 ```yaml
+# ✅ GOOD - Use server-side apply for ArgoCD installation
+kubectl apply --server-side -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+# ❌ BAD - Client-side apply fails with "metadata.annotations: Too long" error
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
 # ✅ GOOD - Explicit ingress configuration
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -93,6 +99,8 @@ metadata:
 spec:
   ingressClassName: traefik
 ```
+
+**Note**: ArgoCD CRDs have large annotations that exceed kubectl's client-side apply limit (262144 bytes). Always use `--server-side` flag.
 
 ## Cluster Sizing Recommendations
 

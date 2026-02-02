@@ -44,7 +44,8 @@ jobs:
 
       - name: Install ArgoCD
         run: |
-          kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+          echo "Installing ArgoCD using server-side apply to handle large CRDs..."
+          kubectl apply --server-side -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
       - name: Wait for ArgoCD Server
         run: |
