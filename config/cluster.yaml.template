@@ -31,3 +31,7 @@ worker_node_pools:
   instance_type: cpx32
   instance_count: 1
   location: nbg1
+  autoscaling:
+    enabled: true
+    min_instances: 1
+    max_instances: 3
