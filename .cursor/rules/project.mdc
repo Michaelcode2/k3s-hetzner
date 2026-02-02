@@ -83,24 +83,45 @@ Required GitHub Secrets:
 
 ### ArgoCD Patterns
 
-```yaml
+```bash
 # ✅ GOOD - Use server-side apply for ArgoCD installation
 kubectl apply --server-side -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
 # ❌ BAD - Client-side apply fails with "metadata.annotations: Too long" error
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
-# ✅ GOOD - Explicit ingress configuration
+# ✅ GOOD - Configure ArgoCD to run insecure behind ingress
+kubectl patch deployment argocd-server -n argocd --type='json' \
+  -p='[{"op": "add", "path": "/spec/template/spec/containers/0/command/-", "value": "--insecure"}]'
+```
+
+```yaml
+# ✅ GOOD - Simple ingress configuration
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: argocd-server-ingress
   namespace: argocd
 spec:
-  ingressClassName: traefik
+  ingressClassName: traefik  # Use spec field, not annotation
+  rules:
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: argocd-server
+            port:
+              name: https
 ```
 
-**Note**: ArgoCD CRDs have large annotations that exceed kubectl's client-side apply limit (262144 bytes). Always use `--server-side` flag.
+**Notes**:
+- ArgoCD CRDs have large annotations that exceed kubectl's client-side apply limit (262144 bytes). Always use `--server-side` flag.
+- Configure ArgoCD with `--insecure` flag when behind ingress to avoid backend TLS verification issues.
+- Use `spec.ingressClassName` instead of deprecated `kubernetes.io/ingress.class` annotation.
+- Avoid Traefik CRDs (like ServersTransport) for simpler, more portable configurations.
+- For re-deployments: delete namespace first or add `--force-conflicts` to resolve ownership conflicts.
 
 ## Cluster Sizing Recommendations
 

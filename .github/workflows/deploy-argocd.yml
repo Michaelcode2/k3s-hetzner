@@ -51,8 +51,17 @@ jobs:
         run: |
           kubectl wait --for=condition=available --timeout=300s deployment/argocd-server -n argocd
 
+      - name: Configure ArgoCD for Ingress
+        run: |
+          echo "Configuring ArgoCD server to run in insecure mode behind ingress..."
+          kubectl patch deployment argocd-server -n argocd --type='json' \
+            -p='[{"op": "add", "path": "/spec/template/spec/containers/0/command/-", "value": "--insecure"}]'
+          
+          echo "Waiting for ArgoCD server to restart..."
+          kubectl rollout status deployment/argocd-server -n argocd --timeout=300s
+
       - name: Configure Ingress
-        run: kubectl apply -f config/argocd-ingress.yaml
+        run: kubectl apply --server-side -f config/argocd-ingress.yaml
 
       - name: Verify ArgoCD Installation
         run: |

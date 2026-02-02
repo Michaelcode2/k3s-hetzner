@@ -101,3 +101,33 @@ Alternatively, you can port-forward the service locally:
 kubectl port-forward svc/argocd-server -n argocd 8080:443
 ```
 Access at `https://localhost:8080`.
+
+## Troubleshooting
+
+### Re-deploying ArgoCD
+
+If you need to re-deploy ArgoCD (e.g., after making configuration changes), first clean up the existing installation:
+
+```bash
+# Delete the entire ArgoCD namespace
+kubectl delete namespace argocd
+
+# Wait for namespace to be fully deleted
+kubectl wait --for=delete namespace/argocd --timeout=60s
+
+# Then re-run the Deploy ArgoCD workflow
+```
+
+### Common Issues
+
+**Issue**: `metadata.annotations: Too long` error during installation  
+**Solution**: The workflow uses `--server-side` apply which handles this automatically. If you're applying manually, use:
+```bash
+kubectl apply --server-side -n argocd -f <manifest>
+```
+
+**Issue**: Ingress returns 502 Bad Gateway  
+**Solution**: Ensure ArgoCD server is running in insecure mode behind the ingress. The workflow handles this automatically by patching the deployment with `--insecure` flag.
+
+**Issue**: `no matches for kind "ServersTransport"` error  
+**Solution**: This project uses a simplified ingress configuration that doesn't require Traefik CRDs. Make sure you're using the latest `config/argocd-ingress.yaml` from the repository.
