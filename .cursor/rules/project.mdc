@@ -26,6 +26,7 @@ This project deploys production-ready K3s clusters on Hetzner Cloud using the [h
   - `cluster_name`: Unique cluster identifier
   - `masters_pool`: Master node configuration
   - `worker_node_pools`: Worker node pools with autoscaling support
+  - `enable_traefik: true`: **REQUIRED** - Traefik is NOT installed by default in hetzner-k3s
 
 ### Security Best Practices
 

@@ -5,6 +5,15 @@ k3s_version: v1.30.2+k3s1
 public_ssh_key_path: $SSH_PUBLIC_KEY_PATH
 private_ssh_key_path: $SSH_PRIVATE_KEY_PATH
 
+# Enable Traefik ingress controller
+embedded_registry_mirror:
+  enabled: false
+k3s_registries: "" #Custom container registries
+schedule_workloads_on_masters: false
+
+# Enable Traefik ingress controller
+enable_traefik: true
+
 networking:
   ssh:
     port: 22

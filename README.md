@@ -24,6 +24,10 @@ Before running the workflows, you need:
 2.  **API Token**: Generate a Read/Write API Token for your project. (See [HetznerConfig.md](HetznerConfig.md) for details).
 3.  **SSH Keys**: Generate an SSH key pair for cluster access.
 
+## Important Notes
+
+⚠️ **Traefik Ingress Controller**: The hetzner-k3s tool does NOT install Traefik by default. You must explicitly enable it in your `cluster.yaml` configuration file by adding `enable_traefik: true`. Without Traefik, the ArgoCD ingress will not work.
+
 ## Configuration
 
 Add the following secrets to your GitHub Repository:
@@ -120,6 +124,24 @@ kubectl wait --for=delete namespace/argocd --timeout=60s
 
 ### Common Issues
 
+**Issue**: `No resources found` when running `kubectl get ingressclass`  
+**Solution**: Traefik is NOT installed by default in hetzner-k3s clusters. You must:
+1. Add `enable_traefik: true` to your `cluster.yaml` configuration
+2. Re-provision the cluster OR manually install Traefik:
+```bash
+# Quick fix: Create IngressClass manually (if Traefik pods exist but IngressClass is missing)
+kubectl apply -f - <<EOF
+apiVersion: networking.k8s.io/v1
+kind: IngressClass
+metadata:
+  name: traefik
+  annotations:
+    ingressclass.kubernetes.io/is-default-class: "true"
+spec:
+  controller: traefik.io/ingress-controller
+EOF
+```
+
 **Issue**: `metadata.annotations: Too long` error during installation  
 **Solution**: The workflow uses `--server-side` apply which handles this automatically. If you're applying manually, use:
 ```bash
@@ -127,7 +149,7 @@ kubectl apply --server-side -n argocd -f <manifest>
 ```
 
 **Issue**: Ingress returns 502 Bad Gateway  
-**Solution**: Ensure ArgoCD server is running in insecure mode behind the ingress. The workflow handles this automatically by patching the deployment with `--insecure` flag.
+**Solution**: Ensure ArgoCD server is running in insecure mode behind the ingress. The workflow handles this automatically by configuring the `argocd-cmd-params-cm` ConfigMap.
 
 **Issue**: `no matches for kind "ServersTransport"` error  
 **Solution**: This project uses a simplified ingress configuration that doesn't require Traefik CRDs. Make sure you're using the latest `config/argocd-ingress.yaml` from the repository.
