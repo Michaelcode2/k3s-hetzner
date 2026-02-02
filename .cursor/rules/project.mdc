@@ -1,0 +1,119 @@
+---
+description: K3s on Hetzner Cloud deployment guidelines and standards
+alwaysApply: true
+---
+
+# K3s Hetzner Cloud Project
+
+This project deploys production-ready K3s clusters on Hetzner Cloud using the [hetzner-k3s](https://github.com/vitobotta/hetzner-k3s) CLI tool.
+
+## Core Technologies
+
+- **hetzner-k3s**: CLI tool for K3s cluster provisioning (no Terraform required)
+- **K3s**: Lightweight Kubernetes distribution
+- **ArgoCD**: GitOps continuous delivery
+- **GitHub Actions**: CI/CD automation
+- **Hetzner Cloud**: Infrastructure provider
+
+## Configuration Management
+
+### Cluster Configuration
+
+- Use `config/cluster.yaml.template` as the base template
+- Never commit actual `cluster.yaml` with real tokens/keys
+- Configuration follows hetzner-k3s YAML schema:
+  - `hetzner_token`: API token (from secrets)
+  - `cluster_name`: Unique cluster identifier
+  - `masters_pool`: Master node configuration
+  - `worker_node_pools`: Worker node pools with autoscaling support
+
+### Security Best Practices
+
+```yaml
+# ✅ GOOD - Use GitHub Secrets
+env:
+  HETZNER_TOKEN: ${{ secrets.HETZNER_TOKEN }}
+  SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+
+# ❌ BAD - Never hardcode credentials
+hetzner_token: hcloud_xxxxxxxxxxxxxxxxxxxxx
+```
+
+Required GitHub Secrets:
+- `HETZNER_TOKEN`: Hetzner Cloud API token (Read/Write)
+- `SSH_PRIVATE_KEY`: Private SSH key for cluster access
+- `SSH_PUBLIC_KEY`: Public SSH key for cluster access
+
+## Workflow Conventions
+
+### Provisioning Workflow (provision-k3s.yml)
+
+- Downloads latest hetzner-k3s binary
+- Generates cluster config from template + secrets
+- Provisions cluster and uploads kubeconfig artifact
+- Always validate cluster.yaml before provisioning
+
+### Deployment Workflow (deploy-argocd.yml)
+
+- Depends on kubeconfig from provisioning workflow
+- Installs ArgoCD with ingress configuration
+- Uses kubectl for manifest application
+
+## Development Guidelines
+
+### When Modifying Cluster Config
+
+1. Update the `.template` file, not actual configs
+3. Document any new required secrets
+4. Validate YAML syntax before committing
+
+### When Adding Workflows
+
+- Use workflow artifacts for sharing data between jobs
+- Implement proper error handling and validation
+- Add descriptive workflow names and job descriptions
+- Use environment variables for configuration
+
+### ArgoCD Patterns
+
+```yaml
+# ✅ GOOD - Explicit ingress configuration
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: argocd-server-ingress
+  namespace: argocd
+spec:
+  ingressClassName: traefik
+```
+
+## Cluster Sizing Recommendations
+
+Reference from hetzner-k3s documentation:
+
+- **Development**: 1 master (CX23) + 2 workers (CX23) ≈ €16/month
+- **Small Production**: 3 masters (CPX22) + 3 workers (CPX32) ≈ €58/month
+- **Medium Production**: 3 masters (CPX22) + 10 workers (CPX32) ≈ €135/month
+
+## Common Tasks
+
+### Access Cluster
+```bash
+export KUBECONFIG=/path/to/kubeconfig
+kubectl get nodes
+```
+
+### Get ArgoCD Password
+```bash
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+```
+
+### Update K3s Version
+Update `k3s_version` in cluster.yaml.template, then re-run provisioning workflow.
+
+## Troubleshooting
+
+- Check workflow logs for provisioning errors
+- Verify Hetzner Cloud Console for resource status
+- Ensure GitHub Secrets are properly configured
+- Review hetzner-k3s documentation for configuration issues

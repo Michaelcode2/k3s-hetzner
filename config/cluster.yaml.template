@@ -16,6 +16,10 @@ networking:
       - 0.0.0.0/0
     api:
       - 0.0.0.0/0
+  # Add section to explicitly enable private networking
+  private_network:
+    enabled: true
+    subnet: 10.0.0.0/16
 
 masters_pool:
   instance_type: cx22
