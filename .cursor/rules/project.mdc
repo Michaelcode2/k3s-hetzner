@@ -90,9 +90,10 @@ kubectl apply --server-side -n argocd -f https://raw.githubusercontent.com/argop
 # ❌ BAD - Client-side apply fails with "metadata.annotations: Too long" error
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
-# ✅ GOOD - Configure ArgoCD to run insecure behind ingress
-kubectl patch deployment argocd-server -n argocd --type='json' \
-  -p='[{"op": "add", "path": "/spec/template/spec/containers/0/command/-", "value": "--insecure"}]'
+# ✅ GOOD - Configure ArgoCD to run insecure behind ingress (via ConfigMap)
+kubectl patch configmap argocd-cmd-params-cm -n argocd --type merge \
+  -p='{"data":{"server.insecure":"true"}}'
+kubectl rollout restart deployment/argocd-server -n argocd
 ```
 
 ```yaml

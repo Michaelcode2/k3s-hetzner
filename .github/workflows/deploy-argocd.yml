@@ -54,10 +54,11 @@ jobs:
       - name: Configure ArgoCD for Ingress
         run: |
           echo "Configuring ArgoCD server to run in insecure mode behind ingress..."
-          kubectl patch deployment argocd-server -n argocd --type='json' \
-            -p='[{"op": "add", "path": "/spec/template/spec/containers/0/command/-", "value": "--insecure"}]'
+          kubectl patch configmap argocd-cmd-params-cm -n argocd --type merge \
+            -p='{"data":{"server.insecure":"true"}}'
           
-          echo "Waiting for ArgoCD server to restart..."
+          echo "Restarting ArgoCD server to apply configuration..."
+          kubectl rollout restart deployment/argocd-server -n argocd
           kubectl rollout status deployment/argocd-server -n argocd --timeout=300s
 
       - name: Configure Ingress
