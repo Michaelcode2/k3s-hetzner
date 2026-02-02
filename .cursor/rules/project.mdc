@@ -44,6 +44,12 @@ Required GitHub Secrets:
 - `SSH_PRIVATE_KEY`: Private SSH key for cluster access
 - `SSH_PUBLIC_KEY`: Public SSH key for cluster access
 
+**Important Security Notes:**
+- Never display sensitive credentials (passwords, tokens, keys) in workflow logs
+- For public repositories, workflow logs are publicly visible
+- Use `::add-mask::` for masking secrets, but prefer not displaying them at all
+- Provide retrieval instructions instead of outputting sensitive values
+
 ## Workflow Conventions
 
 ### Provisioning Workflow (provision-k3s.yml)
@@ -55,9 +61,10 @@ Required GitHub Secrets:
 
 ### Deployment Workflow (deploy-argocd.yml)
 
-- Depends on kubeconfig from provisioning workflow
+- Validates kubeconfig secret exists before deployment
 - Installs ArgoCD with ingress configuration
 - Uses kubectl for manifest application
+- Provides secure password retrieval instructions (never displays passwords in logs)
 
 ## Development Guidelines
 

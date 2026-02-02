@@ -33,6 +33,7 @@ Add the following secrets to your GitHub Repository:
 | `HETZNER_TOKEN` | Your Hetzner Cloud API Token. |
 | `SSH_PRIVATE_KEY` | The private SSH key for the cluster. |
 | `SSH_PUBLIC_KEY` | The public SSH key for the cluster. |
+| `KUBECONFIG` | (Optional) Kubeconfig file content. Required only for standalone ArgoCD deployment workflow. |
 
 ## Usage
 
@@ -44,10 +45,15 @@ Go to the **Actions** tab in GitHub and select the **Provision K3s Cluster** wor
 
 For instructions on scaling the cluster or upgrading K3s, see [ClusterManagement.md](ClusterManagement.md).
 
-### 2. Deploy ArgoCD
-Once the cluster is ready, run the **Deploy ArgoCD** workflow.
+### 2: ArgoCD Deployment
 
-*Note: For the automated pipeline to fully work between jobs, you may need to configure the `KUBECONFIG` secret in your repository using the output from the provisioning step.*
+If you want to deploy ArgoCD (e.g., to an existing cluster), you can use the **Deploy ArgoCD ** workflow. For this to work, you need to:
+
+1. Download the `kubeconfig` artifact from a previous provisioning workflow run
+2. Add it as a GitHub Secret named `KUBECONFIG` in your repository settings
+3. Run the standalone ArgoCD deployment workflow
+
+**Note**: The combined workflow (Option 1) is recommended as it handles everything automatically without requiring manual secret configuration.
 
 ## Accessing the Cluster
 
@@ -63,11 +69,19 @@ Once the cluster is ready, run the **Deploy ArgoCD** workflow.
 
 ## Accessing ArgoCD
 
-After deployment, retrieve the initial admin password:
+After deployment, you'll need to retrieve your admin credentials:
+
+### Get Admin Password
+
+For security reasons, the password is **not displayed in workflow logs**. Retrieve it using:
 
 ```bash
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
 ```
+
+**Credentials:**
+- **Username**: `admin`
+- **Password**: Retrieved using the command above
 
 ### Option 1: Via Ingress (Recommended)
 
