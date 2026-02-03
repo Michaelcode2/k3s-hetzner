@@ -14,6 +14,11 @@ schedule_workloads_on_masters: false
 # Enable Traefik ingress controller
 enable_traefik: true
 
+# Enable Metrics Server
+addons:
+  metrics_server:
+    enabled: true
+
 networking:
   ssh:
     port: 22

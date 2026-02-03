@@ -15,6 +15,7 @@ This project automates the deployment of a production-ready K3s cluster on Hetzn
 - `config/cluster.yaml.template`: Cluster configuration template.
 - `.github/workflows/provision-k3s.yml`: Workflow to provision infrastructure.
 - `.github/workflows/deploy-argocd.yml`: Workflow to deploy ArgoCD.
+- `Ingress.md`: Comprehensive guide for ingress configuration options.
 
 ## Prerequisites
 
@@ -89,13 +90,21 @@ kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.pas
 
 ### Option 1: Via Ingress (Recommended)
 
-The deployment configures an Ingress resource using Traefik. You can access ArgoCD via the public IP of your master node:
+The deployment configures an Ingress resource using Traefik. You can access ArgoCD via:
 
+**Using NodePort:**
 ```
-https://<MASTER_NODE_IP>/
+https://<NODE_IP>:30443
 ```
 
-*Note: You may see a certificate warning because of the default self-signed certificate.*
+**Using Hetzner Load Balancer + Domain (Production):**
+```
+https://argocd.yourdomain.com
+```
+
+*Note: You may see a certificate warning with self-signed certificates. See [Ingress.md](Ingress.md) for Let's Encrypt setup.*
+
+📚 **For detailed ingress configuration options, DNS setup, and production recommendations, see [Ingress.md](Ingress.md)**
 
 ### Option 2: Port Forwarding
 

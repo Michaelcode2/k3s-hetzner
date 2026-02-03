@@ -4,8 +4,11 @@ metadata:
   name: argocd-server-ingress
   namespace: argocd
   annotations:
-    # Tell Traefik the backend (ArgoCD) is using HTTPS
-    traefik.ingress.kubernetes.io/router.tls: "true"
+    # Enable both HTTP and HTTPS entry points
+    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+    # Redirect HTTP to HTTPS
+    traefik.ingress.kubernetes.io/redirect-entry-point: websecure
+    traefik.ingress.kubernetes.io/redirect-permanent: "true"
 spec:
   ingressClassName: traefik
   rules:
@@ -17,4 +20,4 @@ spec:
           service:
             name: argocd-server
             port:
-              name: https
+              number: 80

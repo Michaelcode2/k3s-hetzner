@@ -149,9 +149,27 @@ kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.pas
 ### Update K3s Version
 Update `k3s_version` in cluster.yaml.template, then re-run provisioning workflow.
 
+## Documentation
+
+### Project Guides
+
+- **Ingress.md**: Comprehensive guide covering:
+  - Ingress configuration with/without Traefik
+  - Hetzner Load Balancer setup and costs
+  - DNS configuration (Hetzner DNS, external providers, nip.io)
+  - Let's Encrypt integration for production TLS
+  - Production recommendations and architecture comparisons
+
+### External Resources
+
+- hetzner-k3s documentation: https://hetzner-k3s.com
+- Traefik documentation: https://doc.traefik.io/traefik/
+- Hetzner Cloud Controller Manager: https://github.com/hetznercloud/hcloud-cloud-controller-manager
+
 ## Troubleshooting
 
 - Check workflow logs for provisioning errors
 - Verify Hetzner Cloud Console for resource status
 - Ensure GitHub Secrets are properly configured
 - Review hetzner-k3s documentation for configuration issues
+- Consult Ingress.md for ingress and networking issues
