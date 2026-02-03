@@ -9,6 +9,16 @@ This project automates the deployment of a production-ready K3s cluster on Hetzn
 - **Infrastructure as Code**: Cluster configuration and deployment logic are version controlled.
 - **GitHub Actions**: Fully automated provisioning and deployment pipelines.
 
+---
+
+> **💡 Inspired By**
+> 
+> This project was inspired by the excellent [**hetzner-k3s**](https://github.com/vitobotta/hetzner-k3s) tool by [@vitobotta](https://github.com/vitobotta). 
+> 
+> hetzner-k3s is the easiest and fastest way to create production-ready Kubernetes clusters on Hetzner Cloud—creating a 3-node HA cluster in just 2-3 minutes! Check it out at **[hetzner-k3s.com](https://hetzner-k3s.com/)**.
+
+---
+
 ## Project Structure
 
 - `scripts/deploy-k3s.sh`: Script to download `hetzner-k3s` and provision the cluster.
