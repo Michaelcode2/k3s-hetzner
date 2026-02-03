@@ -47,6 +47,14 @@ jobs:
           echo "Installing ArgoCD using server-side apply to handle large CRDs..."
           kubectl apply --server-side -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
+      # - name: Patch ArgoCD for Control Plane
+      #   run: |
+      #     echo "Patching ArgoCD deployments/statefulsets to run on control plane..."
+      #     # Patch Deployments to add nodeSelector and Tolerations
+      #     kubectl get deployments -n argocd -o name | xargs -I {} kubectl patch {} -n argocd --type=merge -p '{"spec": {"template": {"spec": {"nodeSelector": {"node-role.kubernetes.io/control-plane": "true"}, "tolerations": [{"key": "CriticalAddonsOnly", "operator": "Exists"}]}}}}'
+      #     # Patch StatefulSets to add nodeSelector and Tolerations
+      #     kubectl get statefulsets -n argocd -o name | xargs -I {} kubectl patch {} -n argocd --type=merge -p '{"spec": {"template": {"spec": {"nodeSelector": {"node-role.kubernetes.io/control-plane": "true"}, "tolerations": [{"key": "CriticalAddonsOnly", "operator": "Exists"}]}}}}'
+
       - name: Wait for ArgoCD Server
         run: |
           kubectl wait --for=condition=available --timeout=300s deployment/argocd-server -n argocd
