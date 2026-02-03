@@ -60,6 +60,12 @@ If you want to deploy ArgoCD (e.g., to an existing cluster), you can use the **D
 
 **Note**: The combined workflow (Option 1) is recommended as it handles everything automatically without requiring manual secret configuration.
 
+### ArgoCD on Control Plane
+
+The deployment workflow automatically patches ArgoCD components to run on the control plane nodes. This is useful for optimizing resource usage in smaller clusters. The workflow injects the necessary `tolerations` and `nodeSelector` to bypass the `CriticalAddonsOnly` taint on master nodes.
+
+To enable Argo deployment on the controlplane node, uncomment Workflow job "Patch ArgoCD for Control Plane"
+
 ## Accessing the Cluster
 
 1.  Download the `kubeconfig` artifact from the **Provision K3s Cluster** workflow run.
