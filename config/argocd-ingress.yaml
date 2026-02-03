@@ -4,12 +4,13 @@ metadata:
   name: argocd-server-ingress
   namespace: argocd
   annotations:
-    kubernetes.io/ingress.class: traefik
-    # Tell Traefik the backend (ArgoCD) is using HTTPS
-    traefik.ingress.kubernetes.io/service.serversscheme: https
-    # Allow passing through without checking the self-signed cert of ArgoCD
-    traefik.ingress.kubernetes.io/service.serverstransport: argocd-server-tls@kubernetescrd
+    # Enable both HTTP and HTTPS entry points
+    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+    # Redirect HTTP to HTTPS
+    traefik.ingress.kubernetes.io/redirect-entry-point: websecure
+    traefik.ingress.kubernetes.io/redirect-permanent: "true"
 spec:
+  ingressClassName: traefik
   rules:
   - http:
       paths:
@@ -19,13 +20,4 @@ spec:
           service:
             name: argocd-server
             port:
-              name: https
----
-# Define a ServersTransport to ignore insecure certs on the backend (ArgoCD self-signed)
-apiVersion: traefik.io/v1alpha1
-kind: ServersTransport
-metadata:
-  name: argocd-server-tls
-  namespace: argocd
-spec:
-  insecureSkipVerify: true
+              number: 80
